@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch as _patch
+from functools import partial
 
 
 class Recorder(Mock):
@@ -66,3 +67,9 @@ class Recorder(Mock):
 
     __enter__ = record
     __exit__ = lambda self, e, v, t: self.stop()
+
+#: patch using Recorder.
+patch = partial(_patch, new_callable=Recorder)
+
+#: patch.object using Recorder.
+patch.object = partial(_patch.object, new_callable=Recorder)
