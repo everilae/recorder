@@ -1,3 +1,6 @@
+from unittest.mock import Mock, DEFAULT
+
+
 class Recorder(Mock):
     """
     Mocking recorder that turns the <assert> -> <action> style to
