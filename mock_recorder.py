@@ -50,6 +50,7 @@ class Recorder(Mock):
 
     def record(self):
         self._recording = True
+        return self
 
     def stop(self):
         self._recording = False
