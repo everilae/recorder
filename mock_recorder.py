@@ -22,14 +22,14 @@ class Recorder(Mock):
 
         if not self.call_args_list:
             # too many calls
-            raise RuntimeError("unexpected call",
-                               current_call)
+            raise AssertionError("unexpected %r" %
+                                 current_call)
 
         expected_call = self.call_args_list.pop(0)
         if current_call != expected_call:
-            raise RuntimeError("incorrect call",
-                               expected_call,
-                               current_call)
+            raise AssertionError("incorrect %r, expected %r" %
+                                 (current_call,
+                                  expected_call))
 
         return DEFAULT
 
