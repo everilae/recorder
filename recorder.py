@@ -1,4 +1,4 @@
-from unittest.mock import Mock, DEFAULT
+from unittest.mock import Mock
 
 
 class Recorder(Mock):
