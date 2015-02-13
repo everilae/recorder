@@ -18,33 +18,42 @@ class Recorder(Mock):
     >>> r(2, 3, 4)
     Traceback (most recent call last):
         ...
-    AssertionError: incorrect call(2, 3, 4), expected call(1, 2, 3)
+    AssertionError: Expected call: mock(1, 2, 3)
+    Actual call: mock(2, 3, 4)
     >>> r(1, 2, 3)
     Traceback (most recent call last):
         ...
-    AssertionError: unexpected call(1, 2, 3)
+    AssertionError: Unexpected call: mock(1, 2, 3)
     """
 
     _recording = True
 
-    def __call__(self, *args, **kwgs):
-        retval = super(Recorder, self).__call__(*args, **kwgs)
-        if self._recording:
-            return retval
-
-        # ironically this has some serious side effects
+    def _recorder_check_call(self):
+        """
+        Check that a call to self matches recorded calls.
+        """
         current_call = self.call_args_list.pop()
+        current_call_string = self._format_mock_call_signature(*current_call)
 
         if not self.call_args_list:
             # too many calls
-            raise AssertionError("unexpected %r" %
-                                 (current_call, ))
+            raise AssertionError("Unexpected call: %s" %
+                                 (current_call_string, ))
 
         expected_call = self.call_args_list.pop(0)
-        if current_call != expected_call:
-            raise AssertionError("incorrect %r, expected %r" %
-                                 (current_call,
-                                  expected_call))
+        expected_call_string = self._format_mock_call_signature(*expected_call)
+
+        current_call_key = self._call_matcher(current_call)
+        expected_call_key = self._call_matcher(expected_call)
+        if current_call_key != expected_call_key:
+            raise AssertionError("Expected call: %s\nActual call: %s" %
+                                 (expected_call_string,
+                                  current_call_string))
+
+    def __call__(self, *args, **kwgs):
+        retval = super(Recorder, self).__call__(*args, **kwgs)
+        if not self._recording:
+            self._recorder_check_call()
 
         return retval
 
