@@ -9,7 +9,7 @@ class Recorder(mock.Mock):
         # ironically this if statement has some serious side effects
         if not self._recording and (not self.call_args_list or
                                     self.call_args_list.pop(0) !=
-                                    self.call_args_list.pop(-1)):
+                                    self.call_args_list.pop()):
             raise RuntimeError("incorrect call", args, kwgs)
             
         return mock.DEFAULT
