@@ -25,15 +25,12 @@ class Recorder(Mock):
     AssertionError: unexpected call(1, 2, 3)
     """
 
-    def __init__(self, *args, **kwgs):
-        super().__init__(*args, **kwgs)
-        self.side_effect = partial(Recorder.side_effect, self)
-
     _recording = True
 
-    def side_effect(self, *args, **kwgs):
+    def __call__(self, *args, **kwgs):
+        retval = super(Recorder, self).__call__(*args, **kwgs)
         if self._recording:
-            return DEFAULT
+            return retval
 
         # ironically this has some serious side effects
         current_call = self.call_args_list.pop()
@@ -49,7 +46,7 @@ class Recorder(Mock):
                                  (current_call,
                                   expected_call))
 
-        return DEFAULT
+        return retval
 
     def record(self):
         self._recording = True
