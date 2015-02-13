@@ -1,10 +1,25 @@
-from unittest.mock import Mock, DEFAULT
-
-
 class Recorder(Mock):
     """
     Mocking recorder that turns the <assert> -> <action> style to
     <record> -> <replay> style.
+
+    >>> r = Recorder()
+    >>> with r:
+    ...     ret = r(1, 2, 3)
+    ...
+    >>> r(1, 2, 3) is ret
+    True
+    >>> with r:
+    ...     ret = r(1, 2, 3)
+    ...
+    >>> r(2, 3, 4)
+    Traceback (most recent call last):
+        ...
+    AssertionError: incorrect call(2, 3, 4), expected call(1, 2, 3)
+    >>> r(1, 2, 3)
+    Traceback (most recent call last):
+        ...
+    AssertionError: unexpected call(1, 2, 3)
     """
 
     def __init__(self, *args, **kwgs):
@@ -23,7 +38,7 @@ class Recorder(Mock):
         if not self.call_args_list:
             # too many calls
             raise AssertionError("unexpected %r" %
-                                 current_call)
+                                 (current_call, ))
 
         expected_call = self.call_args_list.pop(0)
         if current_call != expected_call:
