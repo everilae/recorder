@@ -63,10 +63,13 @@ class Recorder(Mock):
 
     def stop(self):
         self._recording = False
-        _type = type(self)
+        _type = Recorder
         for child in self._mock_children.values():
             if isinstance(child, _type):
                 child.stop()
+        ret = self._mock_return_value
+        if isinstance(ret, _type) and ret is not self:
+            ret.stop()
 
     __enter__ = record
     __exit__ = lambda self, e, v, t: self.stop()
