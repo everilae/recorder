@@ -55,7 +55,6 @@ class Recorder(Mock):
         retval = super(Recorder, self).__call__(*args, **kwgs)
         if not self._recording:
             self._recorder_check_call()
-
         return retval
 
     def record(self):
@@ -64,6 +63,10 @@ class Recorder(Mock):
 
     def stop(self):
         self._recording = False
+        _type = type(self)
+        for child in self._mock_children.values():
+            if isinstance(child, _type):
+                child.stop()
 
     __enter__ = record
     __exit__ = lambda self, e, v, t: self.stop()
