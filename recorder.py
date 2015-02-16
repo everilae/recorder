@@ -15,7 +15,9 @@ class _Replay:
             raise RuntimeError("_Replay was given a live recorder")
 
     def __exit__(self, e, v, t):
-        self.recorder._recorder_check_missing_calls()
+        # don't mask assertion errors etc.
+        if not v:
+            self.recorder._recorder_check_missing_calls()
 
 
 class Recorder(Mock):
