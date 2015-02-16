@@ -2,6 +2,22 @@ from unittest.mock import Mock, patch as _patch
 from functools import partial
 
 
+class _Replay:
+    """
+    Replay recorded mock Recorder
+    """
+
+    def __init__(self, recorder):
+        self.recorder = recorder
+
+    def __enter__(self):
+        if self.recorder._recording:
+            raise RuntimeError("_Replay was given a live recorder")
+
+    def __exit__(self, e, v, t):
+        self.recorder._recorder_check_missing_calls()
+
+
 class Recorder(Mock):
     """
     Mocking recorder that turns the <assert> -> <action> style to
@@ -73,6 +89,27 @@ class Recorder(Mock):
 
     __enter__ = record
     __exit__ = lambda self, e, v, t: self.stop()
+
+    def _recorder_check_missing_calls(self):
+        # If there are calls left after replay, raise AssertionError
+        if self.call_args_list:
+            raise AssertionError(
+                "Missed calls: %s" % ('\n'.join(starmap(
+                    self._format_mock_call_signature,
+                    self.call_args_list
+                )), )
+            )
+
+        _type = Recorder
+        for child in self._mock_children.values():
+            if isinstance(child, _type):
+                child._recorder_check_missing_calls()
+        ret = self._mock_return_value
+        if isinstance(ret, _type) and ret is not self:
+            ret._recorder_check_missing_calls()
+
+    def replay(self):
+        return _Replay(self)
 
 #: patch using Recorder.
 patch = partial(_patch, new_callable=Recorder)
