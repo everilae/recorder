@@ -1,5 +1,6 @@
 from unittest.mock import Mock, patch as _patch
 from functools import partial
+from itertools import starmap
 
 
 class _Replay:
